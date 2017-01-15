@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Lucid</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="player player-fullscreen" id="player_div">
+      <div class="overlays"></div>
+      <!-- TODO: remove controls -->
+      <video id="p1" controls preload="auto">
+        You browser does not support the <code>video</code> element.
+      </video>
+      <!-- TODO: remove controls -->
+      <video id="p2" controls preload="auto">
+        You browser does not support the <code>video</code> element.
+      </video>
+    </div>
+
+    <div id="poster">
+      <div class="poster-ovl"></div>
+      <p class="poster-label">
+        <i>Lucid</i>
+        <br>Magdalena Czyżewska
+        <br>wsparcie technologiczne : Michał Czyżewski
+        <br>Pracownia Multimediów
+        <br>dr Łukasz Ogórek, mgr Anna Bąk
+        <br>2016
+      </p>
+    </div>
+
+    <audio id="player-ambient" src="media/ambient.mp3" loop>
+
+    <script src="js/jquery-1.11.3.min.js"></script>
+
+    <script src="js/dreamskipper-config.js"></script> <!-- TODO: load from within .js? -->
+    <script src="js/dreamskipper.js"></script>
+  </body>
+</html>
