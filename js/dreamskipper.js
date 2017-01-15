@@ -5,18 +5,25 @@
  * Distributed under terms of the MIT license.
  */
 
+/*
+ * dsLogger
+ */
+
 var dsLogger = function () {
-  this.verbose = true;
-  this.debug   = true;
+  this.verbosity = 2;
 }
 
 dsLogger.prototype.log = function (message) {
-  if (this.verbose) console.log(message);
+  if (this.verbosity >= 1) console.log(message);
 }
 
 dsLogger.prototype.debug = function (message) {
-  if (this.verbose && this.debug) console.debug(message);
+  if (this.verbosity >= 2) console.debug(message);
 }
+
+/*
+ * dreamskipper
+ */
 
 var dreamskipper = function (playerDivId) {
   this.scenes = {};
@@ -58,31 +65,27 @@ dreamskipper.prototype.startScene = function(sceneId) {
     throw 'No scene "' + sceneId + '" found';
   }
 
-  console.log('Starting scene "' + sceneId + '"');
+  logger.log('Starting scene "' + sceneId + '"');
 
   // set <video> src attribute if not already set
   var encodedMoviePath = this.scenes[sceneId].moviePath.replace(' ', '%20');  // fix for spaces in filenames
-  console.log(encodedMoviePath);
+  logger.debug(encodedMoviePath);
   var loadedSrc = this.getVideoEl().src.substr(-1 * encodedMoviePath.length);
-  console.log('>' + loadedSrc + '<');
-  console.log('>' + encodedMoviePath + '<');
+  logger.debug('current src: ' + loadedSrc);
+  logger.debug('new src:' + encodedMoviePath);
   if (loadedSrc !== encodedMoviePath) {
     this.getVideoEl().src = this.scenes[sceneId].moviePath;
-    console.log('setting the attr');
+    logger.debug('setting the attr');
   }
   else {
-    console.log('attr already set');
+    logger.debug('attr already set');
   }
-
-  // TODO: blinking when changing src/loading
-  // tip: does not blink on play() alone
-  // https://github.com/Hivenfour/SeamlessLoop
-  //this.getVideoEl().load();
 
   var t = this;
 
   this.getVideoEl().addEventListener('durationchange', function() {
-    console.log('Duration change', t.getVideoEl().duration);
+    // XXX: this fires all the time while playing, breaks prefetching, I think
+    logger.log('Duration change', t.getVideoEl().duration);
     t.prefetchScene(t.scenes[sceneId].nextScene);  // TODO: refactor nextScene → nextSceneId
   });
 
@@ -104,15 +107,15 @@ dreamskipper.prototype.startScene = function(sceneId) {
   // link overlays
   this.clearOverlays();
   if ('overlays' in this.scenes[sceneId]) {
-    console.log('Adding overlays for scene "' + sceneId + '"');
+    logger.log('Adding overlays for scene "' + sceneId + '"');
 
     for (var i = 0; i < this.scenes[sceneId].overlays.length; i++) {
-      console.log('scene startTime is ' + this.scenes[sceneId].startTime);
+      logger.log('scene startTime is ' + this.scenes[sceneId].startTime);
       this.addOverlay(this.scenes[sceneId].overlays[i], this.scenes[sceneId].startTime);
     }
   }
   else {
-    console.log('No overlays for scene "' + sceneId + '"');
+    logger.log('No overlays for scene "' + sceneId + '"');
   }
 
   this.getVideoEl().play();
@@ -121,17 +124,17 @@ dreamskipper.prototype.startScene = function(sceneId) {
 dreamskipper.prototype.addScenes = function(scenesDict) {
   // TODO: some validation would be nice
   this.scenes = scenesDict;
-  console.log('Scenes added');
+  logger.log('Scenes added');
 }
 
 dreamskipper.prototype.clearOverlays = function() {
   var ovlDiv = this.playerDiv.getElementsByClassName('overlays')[0];
   ovlDiv.innerHTML = '';
-  console.log('Overlays cleared');
+  logger.log('Overlays cleared');
 }
 
 dreamskipper.prototype.addOverlay = function(overlayConfig, sceneStartTime) {
-  console.log('Adding an overlay');
+  logger.log('Adding an overlay');
 
   var ovl = document.createElement('div');
   ovl.setAttribute('class', 'ovl');
@@ -145,9 +148,9 @@ dreamskipper.prototype.addOverlay = function(overlayConfig, sceneStartTime) {
   ovl.setAttribute('style', styleRule);
 
   // link it up
-  var t = this;
+  var that = this;
   $(ovl).click(function() {
-    t.startScene(overlayConfig.scene);
+    that.startScene(overlayConfig.scene);
   });
 
   // add time bindings
@@ -177,29 +180,29 @@ dreamskipper.prototype.addOverlay = function(overlayConfig, sceneStartTime) {
     }
   }
 
-  console.log('lets append');
+  logger.log('lets append');
   // append the overlay
   var ovlDiv = this.playerDiv.getElementsByClassName('overlays')[0];
   ovlDiv.appendChild(ovl);
 }
 
 dreamskipper.prototype._showOverlay = function(overlayDiv) {
-  //console.log('showing after delay');  // debug?
+  logger.debug('showing after delay');
   overlayDiv.style.display = 'block';
 }
 dreamskipper.prototype._hideOverlay = function(overlayDiv) {
   // Note: hides overlays even if they were cleared
   // maybe we should use deleteTimeout and track timeout ids
 
-  //console.log('hiding after delay');  // debug?
+  logger.debug('hiding after delay');
   overlayDiv.style.display = 'none';
 }
 
-// --------
+/* ---------------------------------------- */
 
 $( document ).ready(function() {
-  var logger = new dsLogger();
-  var ds = new dreamskipper('player_div');
+  window.logger = new dsLogger();
+  window.ds = new dreamskipper('player_div');
   ds.addScenes(sceneData);  // dreamskipper-config.js included in the HTML
 
   $('#p2').hide();
